@@ -39,18 +39,24 @@ end
 
 function factory (params)
 	local _backups_to_keep = 5
-	local _check_interval = 20 -- how many seconds between checks if we need to do a backup. Suggest 20.
+	local _interval = 3 * 60 -- This is interval in seconds for autosave set to 3 * 60 which is 3 min
+	local _check_interval = 0.4 * _interval -- how many seconds between checks if we need to do a backup. Suggested < 0.5 autosave interval
 	local _yield_timer = 1
-	local _last_save = nil
+	local _last_save = os.time(os.date("*t")) --get current time in seconds
+	local _file_counter = 0 -- this keeps track of filenames' numbering
 
 	return function (signal, ref, ...)
 		_yield_timer = _yield_timer - 1
 		if ( _yield_timer <= 0 ) then
 			_yield_timer = _check_interval * 10
-			local now = os.date('%M') % _backups_to_keep
-
-			if ( _last_save ~= now ) then -- time to save a backup!
-				outfilename= ( Session:name() .. '.autosave-' .. math.floor(now) )
+			local now = os.time(os.date("*t"))
+			if ( now < (_last_save + _interval) ) then -- time to save a backup!
+				if (_file_counter >= _backups_to_keep) then
+				    _file_counter = 1
+				else
+				    _file_counter = _file_counter + 1
+				end
+				outfilename= ( Session:name() .. '.autosave-' .. _file_counter )
 				print("Autosaving to " .. outfilename)
 				Session:save_state(outfilename)
 				_last_save = now
