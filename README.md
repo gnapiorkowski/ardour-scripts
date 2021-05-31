@@ -1,3 +1,6 @@
+Fork with time interval changed to 3 minutes
+
+
 # ardour-scripts
 My Ardour utility scripts
 
